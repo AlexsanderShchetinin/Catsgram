@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- *
+ * Class declaring entity of image
  */
 @EqualsAndHashCode(of = {"id"})
 @Getter

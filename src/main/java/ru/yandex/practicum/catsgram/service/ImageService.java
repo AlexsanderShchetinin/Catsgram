@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
+import ru.yandex.practicum.catsgram.exception.ImageFileException;
+import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.Image;
+import ru.yandex.practicum.catsgram.model.ImageData;
 import ru.yandex.practicum.catsgram.model.Post;
 
 import java.io.IOException;
@@ -23,11 +26,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ImageService {
     private final Map<Long, Image> imagesRepository = new HashMap<>();
-    private final String imageDirectory = "C:/Java/dev/sprints/10_sprint/Catsgram/src/main/resources";
+    private final String imageDirectory = "C:/Java/dev/sprints/10_sprint/Catsgram/src/main/resources/images";
     PostService postService;
     long id = 0L;
 
-    @Autowired
     public ImageService(PostService postService) {
         this.postService = postService;
     }
@@ -92,6 +94,33 @@ public class ImageService {
         imagesRepository.put(imageId, image);
 
         return image;
+    }
+
+    // загружаем данные указанного изображения с диска
+    public ImageData getImageData(long imageId) {
+        if (!imagesRepository.containsKey(imageId)) {
+            throw new NotFoundException("Изображение с id = " + imageId + " не найдено");
+        }
+        Image image = imagesRepository.get(imageId);
+        // загрузка файла с диска
+        byte[] data = loadFile(image);
+
+        return new ImageData(data, image.getOriginalFileName());
+    }
+
+    private byte[] loadFile(Image image) {
+        Path path = Paths.get(image.getFilePath());
+        if (Files.exists(path)) {
+            try {
+                return Files.readAllBytes(path);
+            } catch (IOException e) {
+                throw new ImageFileException("Ошибка чтения файла.  Id: " + image.getId()
+                        + ", name: " + image.getOriginalFileName(), e);
+            }
+        } else {
+            throw new ImageFileException("Файл не найден. Id: " + image.getId()
+                    + ", name: " + image.getOriginalFileName());
+        }
     }
 
     private long getNextId() {
