@@ -1,8 +1,15 @@
 package ru.yandex.practicum.catsgram.model;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
+/**
+ *
+ */
 @EqualsAndHashCode(of = {"id"})
+@Getter
+@Setter
 public class Image {
 
     Long id;    // уникальный идентификатор изображения,
